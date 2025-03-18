@@ -1,8 +1,6 @@
-# Space Shooter
+# 🚀 Space Shooter 🎮 [Play Now!](https://bibryam.github.io/space-shooter)
 
 ![Space Shooter Gameplay](screenshot.png)
-
-## 🎮 [Play Now!](https://bibryam.github.io/space-shooter)
 
 ## ✨ Features
 
