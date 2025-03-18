@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Shooter</title>
+    <meta name="description" content="A retro-style space shooter game with stunning visual effects and challenging enemies.">
+    <meta property="og:title" content="Space Shooter">
+    <meta property="og:description" content="Challenge yourself in this space shooter with beautiful visuals and intuitive gameplay!">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Space Shooter">
+    <meta name="twitter:description" content="Play now and share your high score!">
+    <meta name="twitter:image" content="https://i.imgur.com/DYmMmLf.png"> <!-- Example image URL - replace with actual game screenshot -->
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- p5.js library (load before any game scripts) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Game canvas will be created here by p5.js -->
+    </div>
+    
+    <!-- GitHub link - subtle in the bottom right corner -->
+    <a href="https://github.com/bibryam/space-shooter" target="_blank" class="github-link">GitHub</a>
+    
+    <!-- Game scripts - load after p5.js and DOM elements -->
+    <script src="particle.js"></script>
+    <script src="powerup.js"></script>
+    <script src="bullet.js"></script>
+    <script src="enemy.js"></script>
+    <script src="player.js"></script>
+    <script src="sketch.js"></script>
+    
+    <!-- Social sharing script -->
+    <script>
+        // Create global share function that can be called from the game
+        window.shareScore = function() {
+            // Only share when game is over
+            if (typeof gameState !== 'undefined' && gameState === 'gameOver') {
+                // Create share text for X (formerly Twitter)
+                const shareText = `I just scored ${score} points in Space Shooter! Can you beat my score? #SpaceShooter #GameDev`;
+                
+                // Create X share URL (Twitter API still uses twitter.com domain)
+                const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(window.location.href)}`;
+                
+                // Open X share dialog
+                window.open(shareUrl, '_blank');
+            }
+        };
+        
+        // Document loaded event handler
+        document.addEventListener('keydown', function(event) {
+            // 'S' key shortcut for sharing
+            if (event.key === 's' || event.key === 'S') {
+                if (typeof gameState !== 'undefined' && gameState === 'gameOver') {
+                    window.shareScore();
+                }
+            }
+        });
+        
+        // Ensure everything is loaded properly
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('All resources loaded, game ready to play!');
+            // This helps confirm that all resources have loaded correctly
+        });
+    </script>
+</body>
+</html> 
