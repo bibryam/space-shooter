@@ -351,15 +351,40 @@ function updateGame() {
         level++;
         levelStartTime = currentTime;
         
+        // Add bonus points for completing the level
+        let levelBonus = (level-1) * 100;  // Level 1→2 = 100, Level 2→3 = 200, etc.
+        score += levelBonus;
+        
+        // Show notification for level bonus with delay
+        setTimeout(() => {
+            showNotification(
+                "LEVEL " + (level-1) + " COMPLETE!", 
+                "+" + levelBonus + " points", 
+                [0, 255, 0],
+                120  // 2 seconds
+            );
+        }, 500);  // 0.5 second delay
+        
         // Increase difficulty with each level (more gradual - ~10% per level)
         baseEnemySpeed += 0.1 + (level * 0.01); // More gradual speed increase
         
         // Display level announcement
         levelDisplayTimer = 180; // Display for 3 seconds (60 frames/second)
         
+        // Give extra life at specific levels with delay
+        if (level === 4 || level === 7 || level === 9 || level === 10) {
+            player.lives++;
+            setTimeout(() => {
+                showNotification("EXTRA LIFE!", 
+                               "Lives: " + player.lives, 
+                               [0, 255, 0],
+                               120); // 2 seconds
+            }, 2000);  // Increased delay to 2 seconds
+        }
+        
         // Give player a nuclear bomb at level 5 and every 2 levels after
         if (level == 5 || (level > 5 && (level - 5) % 2 == 0)) {
-            player.hasBomb = true;
+            player.addBomb();
             // Create special effect for receiving the bomb
             particleSystem.createExplosion(
                 player.x + player.width/2,
@@ -368,11 +393,13 @@ function updateGame() {
                 1.5
             );
             
-            // Add a notification message about the nuclear bomb
-            showNotification("☢ NUCLEAR ACQUIRED!", 
-                             "Press ↵ as last resort", 
-                             [255, 50, 50],
-                             120); // 2 seconds
+            // Add a notification message about the nuclear bomb with delay
+            setTimeout(() => {
+                showNotification("☢ NUCLEAR ACQUIRED!", 
+                                "Press ↵ as last resort", 
+                                [255, 50, 50],
+                                120); // 2 seconds
+            }, 3500);  // Increased delay to 3.5 seconds
         }
         
         // Spawn boss at set level intervals
@@ -834,81 +861,201 @@ function updatePowerUps() {
 
 // Display game information (score, level, lives)
 function displayGameInfo() {
-    // Score display with animated scale effect
+    // Score display with color change effect instead of scale
     push();
-    fill(255, 255, 255, uiAlpha);
-    textSize(24 * scoreDisplayScale);
+    let scoreColor = lerpColor(
+        color(255, 255, 255, uiAlpha),
+        color(255, 100, 100, uiAlpha),
+        scoreDisplayScale
+    );
+    fill(scoreColor);
+    textSize(24);
     textAlign(LEFT, TOP);
     text('SCORE: ' + score, 20, 20);
-    // Gradually return to normal scale
-    scoreDisplayScale = lerp(scoreDisplayScale, 1, 0.1);
+    // Gradually return to normal color
+    scoreDisplayScale = lerp(scoreDisplayScale, 0, 0.1);
     
-    // Level indicator (changed from Wave)
+    // Level indicator
     textSize(18);
+    fill(255, 255, 255, uiAlpha);
     text('LEVEL: ' + level, 20, 60);
     
-    // Lives remaining (draw ship icons)
+    // Lives remaining (draw heart icons)
     for (let i = 0; i < player.lives; i++) {
-        // Small ship icon for each life
-        fill(100, 130, 230, uiAlpha);
-        rect(20 + i * 30, 90, 20, 20, 2);
-        fill(80, 100, 200, uiAlpha);
-        triangle(
-            20 + i * 30 + 10, 90,
-            20 + i * 30 + 5, 90 + 10,
-            20 + i * 30 + 15, 90 + 10
-        );
+        // Draw heart shape
+        push();
+        translate(20 + i * 30, 90);
+        fill(255, 50, 50, uiAlpha);
+        noStroke();
+        beginShape();
+        vertex(0, 5);
+        bezierVertex(0, 5, 5, 0, 10, 5);
+        bezierVertex(15, 0, 20, 5, 20, 5);
+        bezierVertex(20, 5, 20, 15, 10, 20);
+        bezierVertex(0, 15, 0, 5, 0, 5);
+        endShape();
+        pop();
     }
     
     // Power-up status indicators
     let powerUpY = 120;
     
     if (player.hasTripleShot) {
-        fill(0, 255, 0, uiAlpha);
-        text('Triple Shot: ' + ceil(player.tripleShotTimer / 1000) + 's', 20, powerUpY);
+        push();
+        // Draw power-up name
+        fill(255, 50, 50, uiAlpha);
+        textAlign(LEFT, TOP);
+        text('Burst', 20, powerUpY);
+        
+        // Draw new burst indicator (Spreading Arrows design)
+        translate(100, powerUpY + 10);  // Moved closer to text
+        noStroke();
+        
+        // Draw three arrows spreading outward
+        let arrowPulse = sin(frameCount * 0.1) * 0.3 + 0.7;
+        let arrowSize = 12;
+        let spreadAngle = 0.4; // Angle between arrows
+        
+        // Draw arrows with gradient effect
+        for (let i = -1; i <= 1; i++) {
+            push();
+            rotate(i * spreadAngle);
+            
+            // Arrow body
+            fill(255, 50, 50, uiAlpha * arrowPulse);
+            rect(-arrowSize/2, -arrowSize/4, arrowSize, arrowSize/2);
+            
+            // Arrow head
+            beginShape();
+            vertex(arrowSize/2, -arrowSize/2);
+            vertex(arrowSize/2 + arrowSize/3, 0);
+            vertex(arrowSize/2, arrowSize/2);
+            endShape(CLOSE);
+            
+            // Arrow trail
+            fill(255, 50, 50, uiAlpha * 0.3 * arrowPulse);
+            beginShape();
+            vertex(-arrowSize/2, -arrowSize/2);
+            vertex(-arrowSize/2, arrowSize/2);
+            vertex(-arrowSize/2 - arrowSize/3, 0);
+            endShape(CLOSE);
+            
+            pop();
+        }
+        
+        // Power level indicator
+        let powerLevel = player.tripleShotTimer / 10000;
+        fill(255, 50, 50, uiAlpha * 0.3);
+        rect(-arrowSize/2 - 2, -arrowSize/2 - 2, (arrowSize + 4) * powerLevel, arrowSize + 4, 1);
+        
+        pop();
         powerUpY += 25;
     }
     
     if (player.hasSpeedBoost) {
-        fill(255, 255, 0, uiAlpha);
-        text('Speed Boost: ' + ceil(player.speedBoostTimer / 1000) + 's', 20, powerUpY);
+        push();
+        // Draw power-up name
+        fill(255, 150, 0, uiAlpha);
+        textAlign(LEFT, TOP);
+        text('Nitro', 20, powerUpY);
+        
+        // Draw new nitro indicator (Chevron design)
+        translate(100, powerUpY + 10);  // Moved closer to text
+        noStroke();
+        
+        // Draw three chevrons
+        let chevronPulse = sin(frameCount * 0.1) * 0.5 + 0.5;
+        let chevronSize = 8;
+        let spacing = 4;
+        
+        // Draw chevrons with gradient effect
+        for (let i = 0; i < 3; i++) {
+            let alpha = uiAlpha * (1 - i * 0.2) * chevronPulse;
+            fill(255, 150, 0, alpha);
+            
+            // Chevron shape
+            beginShape();
+            vertex(-chevronSize - i * spacing, -chevronSize);
+            vertex(-i * spacing, 0);
+            vertex(-chevronSize - i * spacing, chevronSize);
+            endShape(CLOSE);
+        }
+        
+        // Power level indicator
+        let powerLevel = player.speedBoostTimer / 10000;
+        fill(255, 150, 0, uiAlpha * 0.3);
+        rect(-chevronSize - 2, -chevronSize - 2, (chevronSize * 2 + 4) * powerLevel, chevronSize * 2 + 4, 1);
+        
+        pop();
         powerUpY += 25;
     }
     
     if (player.hasShield) {
+        push();
+        // Draw power-up name
         fill(0, 200, 255, uiAlpha);
-        text('Shield: Active', 20, powerUpY);
-        powerUpY += 25;
-    }
-    
-    // Nuclear bomb indicator with flashing effect and key hint
-    if (player.hasBomb) {
-        // Create a pulsing/flashing effect for the bomb indicator
-        let bombPulse = 150 + sin(frameCount * 0.1) * 100;
-        fill(255, 50, 50, bombPulse);
-        
-        // Add visual emphasis with custom bomb icon
         textAlign(LEFT, TOP);
-        textSize(18);
-        text('☢ NUCLEAR [↵]', 20, powerUpY);
+        text('Shield', 20, powerUpY);
         
-        // Draw small explosion icon
+        // Draw shield indicator
+        translate(100, powerUpY + 10);  // Moved closer to text
         noStroke();
-        fill(255, 100, 50, bombPulse);
-        ellipse(10, powerUpY + 10, 8, 8);
-        stroke(255, 200, 0, bombPulse);
-        strokeWeight(1);
-        for (let i = 0; i < 8; i++) {
-            let angle = i * PI/4;
-            line(10, powerUpY + 10, 
-                 10 + cos(angle) * 10, 
-                 powerUpY + 10 + sin(angle) * 10);
-        }
         
+        // Draw hexagonal shield
+        let shieldSize = 15;
+        let shieldPulse = sin(frameCount * 0.1) * 0.3 + 0.7;
+        
+        // Shield glow
+        fill(0, 200, 255, uiAlpha * 0.3 * shieldPulse);
+        beginShape();
+        for (let i = 0; i < 6; i++) {
+            let angle = (i / 6) * TWO_PI;
+            let x = cos(angle) * (shieldSize + 2);
+            let y = sin(angle) * (shieldSize + 2);
+            vertex(x, y);
+        }
+        endShape(CLOSE);
+        
+        // Main shield
+        fill(0, 200, 255, uiAlpha * shieldPulse);
+        beginShape();
+        for (let i = 0; i < 6; i++) {
+            let angle = (i / 6) * TWO_PI;
+            let x = cos(angle) * shieldSize;
+            let y = sin(angle) * shieldSize;
+            vertex(x, y);
+        }
+        endShape(CLOSE);
+        
+        // Shield power level indicator
+        let shieldPower = player.shieldTimer / 10000;
+        fill(0, 200, 255, uiAlpha * 0.5);
+        beginShape();
+        for (let i = 0; i < 6; i++) {
+            let angle = (i / 6) * TWO_PI;
+            let x = cos(angle) * (shieldSize * shieldPower);
+            let y = sin(angle) * (shieldSize * shieldPower);
+            vertex(x, y);
+        }
+        endShape(CLOSE);
+        
+        pop();
         powerUpY += 25;
     }
     
-    // Display level announcement (changed from wave)
+    // Draw nuclear bomb indicator
+    if (player.hasBomb) {
+        push();
+        // Draw power-up name with count and enter symbol
+        fill(50, 255, 50, uiAlpha);
+        textAlign(LEFT, TOP);
+        text('Nuclear (↵' + player.bombCount + ')', 20, powerUpY);
+        
+        pop();
+        powerUpY += 25;
+    }
+    
+    // Display level announcement
     if (levelDisplayTimer > 0) {
         let levelAlpha = levelDisplayTimer > 120 ? 255 : levelDisplayTimer * 2;
         let levelScale = 1 + sin(frameCount * 0.1) * 0.1;
@@ -1092,11 +1239,9 @@ function keyPressed() {
         // Set spacebar flag for continuous shooting
         isSpacebarDown = true;
         
-        // Start the game if on start screen or restart if on game over
+        // Start the game if on start screen only
         if (gameState === 'start') {
             startGame();
-        } else if (gameState === 'gameOver') {
-            resetGame();
         }
         
         // Initial shot when key is first pressed (in playing state)
@@ -1114,9 +1259,7 @@ function keyPressed() {
             }
         } 
         // Alternative way to start/restart
-        else if (gameState === 'start') {
-            startGame();
-        } else if (gameState === 'gameOver') {
+        else if (gameState === 'start' || gameState === 'gameOver') {
             resetGame();
         }
     } else if (key === 's' || key === 'S') {
@@ -1161,11 +1304,9 @@ function mousePressed() {
                 window.shareScore();
                 console.log("Share button clicked"); // Debug message
             } else {
-                // Fallback if shareScore function is not defined
-                console.log("Score sharing not implemented");
-                // Basic fallback implementation - open a new window with a tweet
-                let tweetText = `I scored ${score} points in Star Shooter! Can you beat my score?`;
-                let tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+                // Use the provided shortlink with the score
+                let tweetText = `I scored ${score} points in Space Shooter! Can you beat my score?`;
+                let tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('https://bibryam.github.io/space-shooter')}`;
                 window.open(tweetUrl, '_blank');
             }
         }

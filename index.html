@@ -43,10 +43,10 @@
             // Only share when game is over
             if (typeof gameState !== 'undefined' && gameState === 'gameOver') {
                 // Create share text for X (formerly Twitter)
-                const shareText = `I just scored ${score} points in Space Shooter! Can you beat my score? #SpaceShooter #GameDev`;
+                const shareText = `I'm a galactic legend! Scored ${score} in Space Shooter!`;
                 
                 // Create X share URL (Twitter API still uses twitter.com domain)
-                const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(window.location.href)}`;
+                const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent('https://bibryam.github.io/space-shooter')}`;
                 
                 // Open X share dialog
                 window.open(shareUrl, '_blank');

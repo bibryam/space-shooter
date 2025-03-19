@@ -72,15 +72,21 @@ class PowerUp {
                 break;
                 
             case 'speedBoost':
-                // Lightning bolt
+                // Flame symbol
                 beginShape();
-                vertex(-8, -12); // Top left
-                vertex(2, -4);   // Middle left
-                vertex(-2, 4);   // Middle
-                vertex(8, 12);   // Bottom right
-                vertex(4, 4);    // Bottom middle
-                vertex(8, -4);   // Upper right
-                vertex(-2, -8);  // Upper middle
+                vertex(0, -10);  // Top
+                vertex(-8, 5);   // Bottom left
+                vertex(0, 0);    // Middle indent
+                vertex(8, 5);    // Bottom right
+                endShape(CLOSE);
+                
+                // Inner flame
+                fill(255, 255, 200);
+                beginShape();
+                vertex(0, -5);   // Top
+                vertex(-4, 3);   // Bottom left
+                vertex(0, 0);    // Middle indent
+                vertex(4, 3);    // Bottom right
                 endShape(CLOSE);
                 break;
                 

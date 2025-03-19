@@ -14,11 +14,13 @@ class Player {
         
         // Special nuclear bomb
         this.hasBomb = false;
+        this.bombCount = 0; // Added to track number of bombs
         this.bombAnimationTimer = 0;
         
         // Power-up timers
         this.tripleShotTimer = 0;
         this.speedBoostTimer = 0;
+        this.shieldTimer = 0;  // Added shield timer
         
         // Shooting cooldown - reduced to allow faster firing
         this.lastShotTime = 0;
@@ -102,20 +104,27 @@ class Player {
     
     activateSpeedBoost() {
         this.hasSpeedBoost = true;
-        this.speedBoostTimer = 5000; // 5 seconds
+        this.speedBoostTimer = 10000; // Changed to 10 seconds
     }
     
     activateShield() {
         this.hasShield = true;
+        this.shieldTimer = 10000; // 10 seconds
     }
     
     activateBomb() {
-        if (this.hasBomb) {
-            this.hasBomb = false;
+        if (this.bombCount > 0) {
+            this.bombCount--;
+            this.hasBomb = this.bombCount > 0; // Update hasBomb based on remaining bombs
             this.bombAnimationTimer = 60; // 1 second animation
             return true; // Bomb was used successfully
         }
         return false; // No bomb available
+    }
+    
+    addBomb() {
+        this.bombCount++;
+        this.hasBomb = true;
     }
     
     hit() {
@@ -149,15 +158,13 @@ class Player {
             if (this.speedBoostTimer <= 0) {
                 this.hasSpeedBoost = false;
             }
-            
-            // Add speed trail particles when speed boost is active
-            if (random() < 0.5) {
-                particleSystem.addParticles(
-                    this.x + random(this.width), 
-                    this.y + this.height - 5, 
-                    1, 
-                    [100, 100, 255, 100]
-                );
+        }
+        
+        // Update shield timer
+        if (this.hasShield) {
+            this.shieldTimer -= deltaTime;
+            if (this.shieldTimer <= 0) {
+                this.hasShield = false;
             }
         }
         
@@ -170,140 +177,156 @@ class Player {
     display() {
         push();
         
-        // Draw thruster flames when moving
-        if (this.isMoving || frameCount % 3 == 0) {
-            // Thruster base
-            fill(255, 150, 0, 200);
-            let thrusterHeight = 15 + sin(frameCount * 0.2) * 5;
-            let thrusterWidth = 12;
-            
-            // Left thruster
-            triangle(
-                this.x + this.width * 0.3, this.y + this.height,
-                this.x + this.width * 0.3 - thrusterWidth/2, this.y + this.height + thrusterHeight,
-                this.x + this.width * 0.3 + thrusterWidth/2, this.y + this.height + thrusterHeight
-            );
-            
-            // Right thruster
-            triangle(
-                this.x + this.width * 0.7, this.y + this.height,
-                this.x + this.width * 0.7 - thrusterWidth/2, this.y + this.height + thrusterHeight,
-                this.x + this.width * 0.7 + thrusterWidth/2, this.y + this.height + thrusterHeight
-            );
-            
-            // Inner flame (more yellow)
-            fill(255, 255, 0, 150);
-            thrusterHeight = 10 + sin(frameCount * 0.3) * 3;
-            thrusterWidth = 6;
-            
-            // Left inner flame
-            triangle(
-                this.x + this.width * 0.3, this.y + this.height,
-                this.x + this.width * 0.3 - thrusterWidth/2, this.y + this.height + thrusterHeight,
-                this.x + this.width * 0.3 + thrusterWidth/2, this.y + this.height + thrusterHeight
-            );
-            
-            // Right inner flame
-            triangle(
-                this.x + this.width * 0.7, this.y + this.height,
-                this.x + this.width * 0.7 - thrusterWidth/2, this.y + this.height + thrusterHeight,
-                this.x + this.width * 0.7 + thrusterWidth/2, this.y + this.height + thrusterHeight
-            );
-        }
-        
-        // Main ship body - futuristic design
+        // Draw thruster flames with animation
         noStroke();
+        let flameSize = this.hasSpeedBoost ? 2 : 1; // Reduced flame size multiplier for speed boost
         
-        // Ship body (metallic blue)
-        fill(100, 130, 230);
-        rect(this.x, this.y, this.width, this.height, 5);
-        
-        // Ship front (nose cone)
-        fill(80, 100, 200);
-        triangle(
-            this.x + this.width / 2, this.y,
-            this.x + 10, this.y + 20,
-            this.x + this.width - 10, this.y + 20
-        );
-        
-        // Cockpit
-        fill(200, 230, 255, 180);
-        ellipse(this.x + this.width / 2, this.y + 15, 20, 10);
-        
-        // Wing details
-        fill(60, 80, 180);
-        // Left wing
-        quad(
-            this.x, this.y + this.height - 15,
-            this.x - 10, this.y + this.height - 5,
-            this.x - 5, this.y + this.height,
-            this.x + 10, this.y + this.height
-        );
-        
-        // Right wing
-        quad(
-            this.x + this.width, this.y + this.height - 15,
-            this.x + this.width + 10, this.y + this.height - 5,
-            this.x + this.width + 5, this.y + this.height,
-            this.x + this.width - 10, this.y + this.height
-        );
-        
-        // Engine glow
-        if (frameCount % 2 == 0) {
-            fill(0, 150, 255, 50);
-            ellipse(this.x + this.width * 0.3, this.y + this.height - 5, 10, 6);
-            ellipse(this.x + this.width * 0.7, this.y + this.height - 5, 10, 6);
+        // Engine glow effect (2 main engines instead of 4)
+        for (let i = 0; i < 2; i++) {
+            let engineX = this.x + (i === 0 ? this.width * 0.35 : this.width * 0.65);
+            let engineY = this.y + this.height - 5;
+            
+            // Outer engine glow (subtle red)
+            fill(255, 50, 0, this.hasSpeedBoost ? 60 : 40);
+            let glowSize = (6 + sin(frameCount * 0.2) * 2) * (this.hasSpeedBoost ? 1.2 : 1);
+            ellipse(engineX, engineY, glowSize, glowSize);
+            
+            // Dynamic flame effect
+            fill(255, 50, 0, this.hasSpeedBoost ? 220 : 180); // More red flames during speed boost
+            let flameHeight = (12 + sin(this.thrusterAnimation * PI * 2) * 4) * flameSize;
+            let flameWidth = (5 * flameSize) + (this.hasSpeedBoost ? 2 : 0); // Wider flames during speed boost
+            
+            beginShape();
+            vertex(engineX - flameWidth/2, engineY);
+            vertex(engineX + flameWidth/2, engineY);
+            vertex(engineX + sin(frameCount * 0.1) * 2, engineY + flameHeight);
+            vertex(engineX - sin(frameCount * 0.1) * 2, engineY + flameHeight);
+            endShape(CLOSE);
+            
+            // Inner flame (more intense during speed boost)
+            fill(255, 200, 0, this.hasSpeedBoost ? 200 : 150);
+            let innerFlameWidth = flameWidth * 0.6;
+            beginShape();
+            vertex(engineX - innerFlameWidth/2, engineY);
+            vertex(engineX + innerFlameWidth/2, engineY);
+            vertex(engineX + sin(frameCount * 0.1), engineY + flameHeight * 0.8);
+            vertex(engineX - sin(frameCount * 0.1), engineY + flameHeight * 0.8);
+            endShape(CLOSE);
         }
         
-        // Accent lines
-        stroke(200, 220, 255);
-        strokeWeight(1);
-        line(this.x + 15, this.y + 25, this.x + this.width - 15, this.y + 25);
-        line(this.x + 10, this.y + 35, this.x + this.width - 10, this.y + 35);
+        // Main fuselage (light gray)
+        fill(180, 180, 180);
+        // Nose cone
+        beginShape();
+        vertex(this.x + this.width/2, this.y); // Tip
+        vertex(this.x + this.width * 0.7, this.y + this.height * 0.3);
+        vertex(this.x + this.width * 0.7, this.y + this.height * 0.8);
+        vertex(this.x + this.width * 0.3, this.y + this.height * 0.8);
+        vertex(this.x + this.width * 0.3, this.y + this.height * 0.3);
+        endShape(CLOSE);
         
-        // Draw shield if active
+        // X-wing foils (wings)
+        fill(150, 150, 150);
+        noStroke(); // Add this to prevent any red lines from previous drawing
+        
+        // Upper left wing
+        beginShape();
+        vertex(this.x + this.width * 0.3, this.y + this.height * 0.3);
+        vertex(this.x - 5, this.y + this.height * 0.2);
+        vertex(this.x - 10, this.y + this.height * 0.4);
+        vertex(this.x + this.width * 0.2, this.y + this.height * 0.5);
+        endShape(CLOSE);
+        
+        // Upper right wing
+        beginShape();
+        vertex(this.x + this.width * 0.7, this.y + this.height * 0.3);
+        vertex(this.x + this.width + 5, this.y + this.height * 0.2);
+        vertex(this.x + this.width + 10, this.y + this.height * 0.4);
+        vertex(this.x + this.width * 0.8, this.y + this.height * 0.5);
+        endShape(CLOSE);
+        
+        // Lower left wing
+        beginShape();
+        vertex(this.x + this.width * 0.3, this.y + this.height * 0.6);
+        vertex(this.x - 5, this.y + this.height * 0.7);
+        vertex(this.x - 10, this.y + this.height * 0.9);
+        vertex(this.x + this.width * 0.2, this.y + this.height);
+        endShape(CLOSE);
+        
+        // Lower right wing
+        beginShape();
+        vertex(this.x + this.width * 0.7, this.y + this.height * 0.6);
+        vertex(this.x + this.width + 5, this.y + this.height * 0.7);
+        vertex(this.x + this.width + 10, this.y + this.height * 0.9);
+        vertex(this.x + this.width * 0.8, this.y + this.height);
+        endShape(CLOSE);
+        
+        // Cockpit (red tinted like X-wing)
+        fill(255, 50, 50, 100);
+        beginShape();
+        vertex(this.x + this.width * 0.4, this.y + this.height * 0.2);
+        vertex(this.x + this.width * 0.6, this.y + this.height * 0.2);
+        vertex(this.x + this.width * 0.55, this.y + this.height * 0.4);
+        vertex(this.x + this.width * 0.45, this.y + this.height * 0.4);
+        endShape(CLOSE);
+        
+        // Red stripes (X-wing detail) - Only draw if not in triple shot mode
+        if (!this.hasTripleShot) {
+            stroke(255, 0, 0);
+            strokeWeight(2);
+            line(this.x - 10, this.y + this.height * 0.4, this.x + 5, this.y + this.height * 0.4);
+            line(this.x + this.width - 5, this.y + this.height * 0.4, this.x + this.width + 10, this.y + this.height * 0.4);
+        }
+        
+        // Triple shot weapon systems
+        if (this.hasTripleShot) {
+            // Draw additional weapon pods on wings
+            noStroke();
+            fill(100, 100, 100);
+            
+            // Left wing weapon
+            rect(this.x - 5, this.y + this.height * 0.3, 8, 15, 2);
+            // Center weapon
+            rect(this.x + this.width * 0.45, this.y + 5, 10, 20, 2);
+            // Right wing weapon
+            rect(this.x + this.width - 3, this.y + this.height * 0.3, 8, 15, 2);
+            
+            // Weapon glow
+            fill(0, 255, 255, 50 + sin(frameCount * 0.2) * 30);
+            ellipse(this.x - 1, this.y + this.height * 0.3 + 7, 6, 6);
+            ellipse(this.x + this.width * 0.5, this.y + 15, 6, 6);
+            ellipse(this.x + this.width + 1, this.y + this.height * 0.3 + 7, 6, 6);
+        }
+        
+        // Shield effect
         if (this.hasShield) {
             noFill();
-            strokeWeight(2);
-            // Pulsating shield effect
-            let shieldSize = 20 + sin(frameCount * 0.1) * 3;
-            let shieldAlpha = 150 + sin(frameCount * 0.2) * 50;
-            
-            // Shield gradient effect
+            // Outer shield bubble
             for (let i = 0; i < 3; i++) {
-                stroke(0, 255, 255, shieldAlpha - i * 40);
+                let shieldPulse = sin(frameCount * 0.1) * 0.5 + 0.5;
+                let alpha = map(i, 0, 2, 150, 50) * shieldPulse;
+                strokeWeight(3 - i);
+                stroke(0, 200, 255, alpha);
+                
+                // Shield ellipse
                 ellipse(
-                    this.x + this.width / 2, 
-                    this.y + this.height / 2, 
-                    this.width + shieldSize - i * 5, 
-                    this.height + shieldSize - i * 5
+                    this.x + this.width/2,
+                    this.y + this.height/2,
+                    this.width * 1.5 + i * 10,
+                    this.height * 1.5 + i * 10
                 );
+                
+                // Shield hexagon effect
+                beginShape();
+                for (let j = 0; j < 6; j++) {
+                    let angle = j * TWO_PI / 6;
+                    let radius = (this.width + i * 10) * 0.8;
+                    let x = this.x + this.width/2 + cos(angle + frameCount * 0.02) * radius;
+                    let y = this.y + this.height/2 + sin(angle + frameCount * 0.02) * radius;
+                    vertex(x, y);
+                }
+                endShape(CLOSE);
             }
-            
-            // Shield ripple effect on hit (would be triggered by hit)
-            if (frameCount % 30 < 5) {
-                stroke(255, 255, 255, 100);
-                ellipse(
-                    this.x + this.width / 2, 
-                    this.y + this.height / 2, 
-                    this.width + shieldSize + 10,
-                    this.height + shieldSize + 10
-                );
-            }
-        }
-        
-        // Speed boost visual effect
-        if (this.hasSpeedBoost) {
-            noFill();
-            stroke(255, 255, 0, 100 + sin(frameCount * 0.2) * 50);
-            strokeWeight(2);
-            arc(
-                this.x + this.width / 2, 
-                this.y + this.height / 2, 
-                this.width + 30, 
-                this.height + 30, 
-                PI, TWO_PI
-            );
         }
         
         pop();
