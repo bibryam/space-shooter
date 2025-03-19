@@ -1,6 +1,5 @@
-# 🚀 Space Shooter 🎮 [Play Now!](https://bibryam.github.io/space-shooter)
-
-![Space Shooter Gameplay](screenshot.png)
+![Space Shooter Gameplay](preview.gif)
+# Space Shooter 🎮 [Play Now!](https://bibryam.github.io/space-shooter)
 
 ## ✨ Features
 
@@ -62,4 +61,4 @@ Contributions are welcome! Feel free to submit issues and pull requests.
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-Made with ❤️ by [bibryam](https://github.com/bibryam) 
+Made with ❤️ by [Bilgin Ibryam](https://github.com/bibryam) [@bibryam](https://x.com/bibryam) 

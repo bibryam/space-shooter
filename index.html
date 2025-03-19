@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="shortcut icon" href="favicon.png" type="image/png">
     <title>Space Shooter</title>
     <meta name="description" content="A retro-style space shooter game with stunning visual effects and challenging enemies.">
     <meta property="og:title" content="Space Shooter">
@@ -11,7 +13,9 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Space Shooter">
     <meta name="twitter:description" content="Play now and share your high score!">
-    <meta name="twitter:image" content="https://i.imgur.com/DYmMmLf.png"> <!-- Example image URL - replace with actual game screenshot -->
+    <meta name="twitter:image" content="https://bibryam.github.io/space-shooter/preview.png">
+    <meta name="twitter:creator" content="@bibryam">
+    <meta property="og:author" content="Bilgin Ibryam">
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="styles.css">
@@ -43,7 +47,7 @@
             // Only share when game is over
             if (typeof gameState !== 'undefined' && gameState === 'gameOver') {
                 // Create share text for X (formerly Twitter)
-                const shareText = `I'm a galactic legend! Scored ${score} in Space Shooter!`;
+                const shareText = `I'm a galactic legend! Scored ${score} in Space Shooter by @bibryam!`;
                 
                 // Create X share URL (Twitter API still uses twitter.com domain)
                 const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent('https://bibryam.github.io/space-shooter')}`;
