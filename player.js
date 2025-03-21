@@ -97,11 +97,11 @@ class Player {
             bullets = [new Bullet(this.x + this.width / 2, this.y, 'up', false, rocketWidth, rocketHeight)];
         }
         
-        // Add muzzle flash effect
+        // Add muzzle flash effect - REDUCED from 5 to 2 particles
         particleSystem.addParticles(
             this.x + this.width / 2, 
             this.y, 
-            5, 
+            2, 
             [0, 255, 255]
         );
         

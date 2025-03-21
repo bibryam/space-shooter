@@ -161,7 +161,7 @@ class Enemy {
             particleSystem.addParticles(
                 this.x + this.width/2,
                 this.y + this.height,
-                3,
+                1,
                 [255, 100, 50]
             );
         }
@@ -654,14 +654,14 @@ class ShootingEnemy extends Enemy {
             particleSystem.addParticles(
                 this.x + 10, 
                 this.y + this.height * 0.7 + 15, 
-                3, 
+                1, 
                 [255, 200, 100]
             );
             
             particleSystem.addParticles(
                 this.x + this.width - 10, 
                 this.y + this.height * 0.7 + 15, 
-                3, 
+                1, 
                 [255, 200, 100]
             );
             
@@ -772,15 +772,15 @@ class ShootingEnemy extends Enemy {
                     particleSystem.addParticles(
                         this.x + this.width * 0.5,
                         this.y + this.height * 0.6,
-                        5,
+                        2,
                         [200, 230, 255]
                     );
                 } else if (this.shotPattern === 'spiral') {
-                    for (let i = 0; i < 4; i++) {
+                    for (let i = 0; i < 2; i++) {
                         particleSystem.addParticles(
                             this.x + this.width * 0.5,
                             this.y + this.height * 0.5,
-                            3,
+                            1,
                             [200, 230, 255]
                         );
                     }
@@ -798,7 +798,7 @@ class ShootingEnemy extends Enemy {
         particleSystem.addParticles(
             this.x + this.width/2, 
             this.y + this.height/2, 
-            5, 
+            1, 
             [255, 255, 255]
         );
         return this.health <= 0;
@@ -1523,21 +1523,21 @@ class BossEnemy extends Enemy {
                     particleSystem.addParticles(
                         this.x + this.width * 0.5,
                         this.y + this.height * 0.6,
-                        5,
+                        2,
                         [200, 230, 255]
                     );
                 } else if (this.attackPattern === 1) {
-                    for (let i = 0; i < 3; i++) {
+                    for (let i = 0; i < 2; i++) {
                         particleSystem.addParticles(
                             this.x + this.width * 0.25 - 15 + (i * 10) + 4,
                             this.y + this.height * 0.5 + 15,
-                            3,
+                            1,
                             [200, 230, 255]
                         );
                         particleSystem.addParticles(
                             this.x + this.width * 0.75 - 15 + (i * 10) + 4,
                             this.y + this.height * 0.5 + 15,
-                            3,
+                            1,
                             [200, 230, 255]
                         );
                     }
@@ -1562,7 +1562,7 @@ class BossEnemy extends Enemy {
         particleSystem.addParticles(
             this.x + this.width/2,
             this.y + this.height/2,
-            5,
+            1,
             [100, 200, 255]
         );
         

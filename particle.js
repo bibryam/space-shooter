@@ -7,10 +7,10 @@ class Particle {
         // Different behavior based on particle type
         switch(this.type) {
             case 'spark':
-                this.velocity = createVector(random(-3, 3), random(-3, 3));
+                this.velocity = createVector(random(-2, 2), random(-2, 2));
                 this.acceleration = createVector(0, 0.05);
-                this.lifespan = 100 + random(-20, 20);
-                this.size = random(1, 3);
+                this.lifespan = 70 + random(-20, 20);
+                this.size = random(0.5, 2);
                 this.rotationSpeed = random(-0.1, 0.1);
                 this.rotation = random(TWO_PI);
                 break;
@@ -18,16 +18,16 @@ class Particle {
             case 'smoke':
                 this.velocity = createVector(random(-0.5, 0.5), random(-1, -2));
                 this.acceleration = createVector(0, -0.01);
-                this.lifespan = 200 + random(-20, 80);
-                this.size = random(3, 8);
-                this.growRate = random(0.01, 0.03);
+                this.lifespan = 150 + random(-20, 50);
+                this.size = random(2, 5);
+                this.growRate = random(0.01, 0.02);
                 break;
                 
             case 'debris':
                 this.velocity = createVector(random(-2, 2), random(-2, 2));
                 this.acceleration = createVector(0, 0.1);
-                this.lifespan = 150 + random(-20, 20);
-                this.size = random(2, 4);
+                this.lifespan = 100 + random(-20, 20);
+                this.size = random(1, 3);
                 this.rotationSpeed = random(-0.2, 0.2);
                 this.rotation = random(TWO_PI);
                 break;
@@ -35,8 +35,8 @@ class Particle {
             default: // Regular particle
                 this.velocity = createVector(random(-2, 2), random(-2, 2));
                 this.acceleration = createVector(0, 0.05);
-                this.lifespan = 255;
-                this.size = random(3, 8);
+                this.lifespan = 180;
+                this.size = random(2, 5);
                 break;
         }
     }
@@ -48,24 +48,24 @@ class Particle {
         // Type-specific updates
         switch(this.type) {
             case 'spark':
-                this.lifespan -= 5;
+                this.lifespan -= 6;
                 this.rotation += this.rotationSpeed;
                 break;
                 
             case 'smoke':
-                this.lifespan -= 2;
+                this.lifespan -= 3;
                 this.size += this.growRate;
                 // Smoke particles slow down as they rise
                 this.velocity.mult(0.98);
                 break;
                 
             case 'debris':
-                this.lifespan -= 4;
+                this.lifespan -= 5;
                 this.rotation += this.rotationSpeed;
                 break;
                 
             default:
-                this.lifespan -= 4;
+                this.lifespan -= 5;
                 break;
         }
     }
@@ -131,55 +131,55 @@ class ParticleSystem {
     }
     
     createExplosion(x, y, color, scale = 1.0) {
-        // Core bright flash
-        for (let i = 0; i < 10 * scale; i++) {
+        // Core bright flash - reduced from 10 to 5 particles
+        for (let i = 0; i < 5 * scale; i++) {
             let flashParticle = new Particle(x, y, [255, 255, 255], 'spark');
             flashParticle.velocity = createVector(random(-3, 3) * scale, random(-3, 3) * scale);
-            flashParticle.size = random(2, 5) * scale;
-            flashParticle.lifespan = 60 + random(-10, 20);
+            flashParticle.size = random(2, 4) * scale; // Reduced max size from 5 to 4
+            flashParticle.lifespan = 50 + random(-10, 20); // Reduced from 60 to 50
             this.particles.push(flashParticle);
         }
         
-        // Main explosion particles
-        for (let i = 0; i < 20 * scale; i++) {
+        // Main explosion particles - reduced from 20 to 10 particles
+        for (let i = 0; i < 10 * scale; i++) {
             let p = new Particle(x, y, color, 'spark');
-            p.velocity = createVector(random(-4, 4) * scale, random(-4, 4) * scale);
-            p.size = random(3, 6) * scale;
-            p.lifespan = 100 + random(-20, 50);
+            p.velocity = createVector(random(-3, 3) * scale, random(-3, 3) * scale); // Reduced from -4,4 to -3,3
+            p.size = random(2, 4) * scale; // Reduced from 3,6 to 2,4
+            p.lifespan = 80 + random(-20, 30); // Reduced from 100 to 80
             this.particles.push(p);
         }
         
-        // Smoke effect
-        for (let i = 0; i < 5 * scale; i++) {
+        // Smoke effect - reduced from 5 to 3 particles
+        for (let i = 0; i < 3 * scale; i++) {
             let smokeColor = [min(color[0] + 100, 255), min(color[1] + 100, 255), min(color[2] + 100, 255)];
             let p = new Particle(x, y, smokeColor, 'smoke');
             p.velocity = createVector(random(-1, 1), random(-1, 0));
-            p.size = random(10, 20) * scale;
+            p.size = random(8, 15) * scale; // Reduced from 10,20 to 8,15
             this.particles.push(p);
         }
         
-        // Debris effect
-        for (let i = 0; i < 15 * scale; i++) {
+        // Debris effect - reduced from 15 to 8 particles
+        for (let i = 0; i < 8 * scale; i++) {
             let p = new Particle(x, y, color, 'debris');
-            p.velocity = createVector(random(-5, 5) * scale, random(-5, 5) * scale);
-            p.size = random(2, 4) * scale;
+            p.velocity = createVector(random(-4, 4) * scale, random(-4, 4) * scale); // Reduced from -5,5 to -4,4
+            p.size = random(1, 3) * scale; // Reduced from 2,4 to 1,3
             this.particles.push(p);
         }
     }
     
     // Create a smaller impact effect for non-destructive hits
     createImpact(x, y, color) {
-        // Small particles
-        for (let i = 0; i < 8; i++) {
+        // Small particles - reduced from 8 to 4
+        for (let i = 0; i < 4; i++) {
             const angle = random(TWO_PI);
-            const distance = random(2, 5);
+            const distance = random(2, 4); // Reduced max from 5 to 4
             const px = x + cos(angle) * distance;
             const py = y + sin(angle) * distance;
             this.particles.push(new Particle(px, py, color));
         }
         
-        // Sparks
-        for (let i = 0; i < 5; i++) {
+        // Sparks - reduced from 5 to 2
+        for (let i = 0; i < 2; i++) {
             this.particles.push(new Particle(x, y, [255, 255, 200], 'spark'));
         }
     }

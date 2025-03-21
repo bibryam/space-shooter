@@ -1201,11 +1201,6 @@ function displayStartScreen() {
         text('Press SPACE to Start', width/2, height/2);
     }
     
-    // High score display at bottom of screen
-    fill(200, 200, 200);
-    textSize(18);
-    text('HIGH SCORE: 0', width/2, height - 60);
-    
     pop();
 }
 
@@ -1256,7 +1251,7 @@ function displayGameOverScreen() {
             [80, 120, 220]  // Highlight color
         );
         
-        // Button text - improved
+        // Button text - changed back to original text
         fill(255, 255, 255);
         textSize(22);
         textAlign(CENTER, CENTER);
@@ -1353,9 +1348,26 @@ function keyPressed() {
                 detonateNuclearBomb();
             }
         } 
-        // Alternative way to start/restart
-        else if (gameState === 'start' || gameState === 'gameOver') {
-            resetGame();
+        // Change: Go to start screen instead of immediately restarting the game
+        else if (gameState === 'gameOver') {
+            // Clear game objects
+            bullets = [];
+            enemies = [];
+            powerUps = [];
+            gameOverAlpha = 0;
+            
+            // Reset stars and background
+            createBackgroundElements();
+            
+            // Reset player
+            player = new Player();
+            
+            // Set game state to start
+            gameState = 'start';
+        } 
+        // Start game from start screen
+        else if (gameState === 'start') {
+            startGame();
         }
     } else if (key === 's' || key === 'S') {
         // Share shortcut
@@ -1384,8 +1396,21 @@ function mousePressed() {
         
         if (mouseX > buttonX && mouseX < buttonX + buttonWidth && 
             mouseY > buttonY && mouseY < buttonY + buttonHeight) {
-            resetGame();
-            console.log("Play Again button clicked"); // Debug message
+            // Change: Go to start screen instead of immediately restarting
+            bullets = [];
+            enemies = [];
+            powerUps = [];
+            gameOverAlpha = 0;
+            
+            // Reset stars and background
+            createBackgroundElements();
+            
+            // Reset player
+            player = new Player();
+            
+            // Set game state to start
+            gameState = 'start';
+            console.log("Play Again button clicked - going to start screen"); // Debug message
         }
         
         // Check if share button was clicked - using updated coordinates

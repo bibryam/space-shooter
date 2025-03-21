@@ -48,7 +48,7 @@ class Bullet {
         
         // Create trail particles occasionally
         this.trailTimer++;
-        if (this.trailTimer > 3) {
+        if (this.trailTimer > 5) {
             this.trailTimer = 0;
             
             // Add a trail particle
@@ -57,8 +57,8 @@ class Bullet {
                 
                 // For rockets, create more substantial trail
                 if (this.isRocket) {
-                    // Add rocket exhaust trail
-                    for (let i = 0; i < 2; i++) {
+                    // Add rocket exhaust trail - reduced from 2 to 1 particles
+                    for (let i = 0; i < 1; i++) {
                         particleSystem.addParticles(
                             this.x + random(-this.width/2, this.width/2),
                             this.direction === 'up' ? this.y + this.height : this.y,
@@ -68,13 +68,16 @@ class Bullet {
                         );
                     }
                 } else {
-                    // Regular bullet trail
-                    particleSystem.addParticles(
-                        this.x,
-                        this.direction === 'up' ? this.y + this.height : this.y,
-                        1,
-                        trailColor
-                    );
+                    // Regular bullet trail - emit particles less frequently
+                    // Only add trail particles when random chance happens (50% chance)
+                    if (random() < 0.5) {
+                        particleSystem.addParticles(
+                            this.x,
+                            this.direction === 'up' ? this.y + this.height : this.y,
+                            1,
+                            trailColor
+                        );
+                    }
                 }
             }
         }
