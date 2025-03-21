@@ -5,7 +5,11 @@ class Player {
         this.x = width / 2 - this.width / 2;
         this.y = height - this.height - 60;
         this.speed = 5;
-        this.lives = 3;
+        this.lives = 4;
+        
+        // Flag to track when player just lost a life (for UI feedback)
+        this.justLostLife = false;
+        this.lostLifeTimer = 0;
         
         // Power-up states
         this.hasTripleShot = false;
@@ -147,6 +151,11 @@ class Player {
             return false; // Player not destroyed
         } else {
             this.lives--;
+            
+            // Set the flag for UI feedback (blinking hearts)
+            this.justLostLife = true;
+            this.lostLifeTimer = 60; // About 1 second at 60fps
+            
             return this.lives <= 0; // Return true if player is destroyed
         }
     }
@@ -157,6 +166,14 @@ class Player {
         
         // Reset movement flag (will be set to true if player is actively moving)
         this.isMoving = false;
+        
+        // Update the lost life timer and clear flag when done
+        if (this.justLostLife) {
+            this.lostLifeTimer -= deltaTime;
+            if (this.lostLifeTimer <= 0) {
+                this.justLostLife = false;
+            }
+        }
         
         // Update power-up timers
         if (this.hasTripleShot) {

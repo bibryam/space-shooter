@@ -955,13 +955,20 @@ function displayGameInfo() {
     fill(255, 255, 255, uiAlpha);
     text('LEVEL: ' + level, 20, 60);
     
-    // Lives remaining (draw heart icons)
-    for (let i = 0; i < player.lives; i++) {
-        // Draw heart shape
+    // Lives remaining - show only hearts for extra lives (not including current life)
+    const extraLives = Math.max(0, player.lives - 1); // Calculate extra lives
+    
+    // Hearts for extra lives - position them directly under the level text
+    for (let i = 0; i < extraLives; i++) {
         push();
         translate(20 + i * 30, 90);
-        fill(255, 50, 50, uiAlpha);
+        
+        // Heart fill color - make hearts blink red/white if player just lost a life
+        const heartBlink = player.justLostLife && frameCount % 10 < 5; // Blink at 6 frames/sec
+        fill(heartBlink ? 255 : 255, heartBlink ? 255 : 50, heartBlink ? 255 : 50, uiAlpha);
+        
         noStroke();
+        // Draw heart shape
         beginShape();
         vertex(0, 5);
         bezierVertex(0, 5, 5, 0, 10, 5);
