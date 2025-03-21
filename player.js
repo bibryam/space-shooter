@@ -11,6 +11,13 @@ class Player {
         this.justLostLife = false;
         this.lostLifeTimer = 0;
         
+        // Invincibility after death
+        this.isInvincible = false;
+        this.invincibilityDuration = 120; // 2 seconds at 60fps (with deltaTime=1)
+        this.invincibilityTimer = 0;
+        this.blinkRate = 6; // Increased blink rate for more visibility
+        this.isVisible = true; // For blinking effect
+        
         // Power-up states
         this.hasTripleShot = false;
         this.hasSpeedBoost = false;
@@ -145,19 +152,40 @@ class Player {
     }
     
     hit() {
+        // If player is invincible, ignore the hit
+        if (this.isInvincible) {
+            console.log("Hit ignored - player invincible (current timer: " + this.invincibilityTimer + ")"); // Debug info
+            return false; // Player not destroyed
+        }
+        
         // If player has shield, consume shield instead of losing a life
         if (this.hasShield) {
             this.hasShield = false;
             return false; // Player not destroyed
         } else {
             this.lives--;
+            console.log("Player hit! Lives remaining: " + this.lives); // Debug info
             
             // Set the flag for UI feedback (blinking hearts)
             this.justLostLife = true;
             this.lostLifeTimer = 60; // About 1 second at 60fps
             
+            // Make player invincible for a short time after losing a life
+            if (this.lives > 0) {
+                this.isInvincible = true;
+                this.invincibilityTimer = this.invincibilityDuration;
+                console.log("Player now invincible for " + (this.invincibilityDuration / 60) + " seconds (timer: " + this.invincibilityTimer + ")"); // Debug info
+                
+                // Remove notification for invincibility
+            }
+            
             return this.lives <= 0; // Return true if player is destroyed
         }
+    }
+    
+    // Helper method to check if player can be hit (used by collision detection)
+    canBeHit() {
+        return !this.isInvincible;
     }
     
     update(deltaTime) {
@@ -172,6 +200,27 @@ class Player {
             this.lostLifeTimer -= deltaTime;
             if (this.lostLifeTimer <= 0) {
                 this.justLostLife = false;
+            }
+        }
+        
+        // Update invincibility timer and handle blinking effect
+        if (this.isInvincible) {
+            this.invincibilityTimer -= deltaTime;
+            
+            // Log invincibility status every second for debugging
+            if (frameCount % 60 === 0) {
+                console.log("Player invincible: " + this.isInvincible + ", timer: " + this.invincibilityTimer.toFixed(1));
+            }
+            
+            // Create faster, more obvious blinking effect
+            // Blink more rapidly (10 times per second)
+            this.isVisible = (frameCount % 6 < 3);
+            
+            // End invincibility when timer expires
+            if (this.invincibilityTimer <= 0) {
+                this.isInvincible = false;
+                this.isVisible = true; // Make sure player is visible when invincibility ends
+                console.log("Invincibility ended"); // Debug info
             }
         }
         
@@ -205,6 +254,11 @@ class Player {
     }
     
     display() {
+        // If invincible and in invisible phase, don't draw the ship at all
+        if (this.isInvincible && !this.isVisible) {
+            return;
+        }
+        
         push();
         
         // Draw thruster flames with animation
@@ -244,8 +298,21 @@ class Player {
             endShape(CLOSE);
         }
         
-        // Main fuselage (light gray)
-        fill(180, 180, 180);
+        // Change ship color during invincibility - alternate between red and white
+        if (this.isInvincible) {
+            // Blink between red and white
+            if (frameCount % 6 < 3) {
+                // Bright red during half the blink cycle
+                fill(255, 0, 0);
+            } else {
+                // Pure white during other half
+                fill(255, 255, 255);
+            }
+        } else {
+            // Main fuselage (regular color when not invincible)
+            fill(180, 180, 180);
+        }
+        
         // Nose cone
         beginShape();
         vertex(this.x + this.width/2, this.y); // Tip
@@ -256,7 +323,16 @@ class Player {
         endShape(CLOSE);
         
         // X-wing foils (wings)
-        fill(150, 150, 150);
+        if (this.isInvincible) {
+            // Wings should also have the same invincibility color (red/white blinking)
+            if (frameCount % 6 < 3) {
+                fill(255, 0, 0);
+            } else {
+                fill(255, 255, 255);
+            }
+        } else {
+            fill(150, 150, 150);
+        }
         noStroke(); // Add this to prevent any red lines from previous drawing
         
         // Upper left wing

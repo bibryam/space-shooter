@@ -170,6 +170,12 @@ class Bullet {
     }
     
     hits(target) {
+        // Skip collision if target is a player and is invincible
+        if (target.canBeHit !== undefined && !target.canBeHit()) {
+            console.log("Bullet.hits() detected invincibility, skipping collision"); // Debug info
+            return false;
+        }
+        
         // Simple AABB collision detection
         return (
             this.x + this.width / 2 > target.x &&

@@ -423,7 +423,7 @@ function drawBackgroundElements() {
 // Update all game entities
 function updateGame() {
     const currentTime = millis();
-    const deltaTime = 16; // Assume ~60 FPS
+    const deltaTime = 1; // Use constant deltaTime instead of frameRate-dependent value
     
     // Update player
     player.update(deltaTime);
@@ -722,6 +722,12 @@ function updateBullets() {
         } 
         // Check enemy bullets-player collisions
         else if (bullet.isEnemy && bullet.hits(player)) {
+            // Double-check player invincibility here as extra safety
+            if (!player.canBeHit()) {
+                console.log("Bullet hit ignored - player invincible"); // Extra debug
+                continue; // Skip this bullet completely
+            }
+            
             const playerDestroyed = player.hit();
             if (playerDestroyed) {
                 gameState = 'gameOver';
@@ -844,6 +850,13 @@ function updateEnemies(currentTime) {
             enemy.y < player.y + player.height &&
             enemy.y + enemy.height > player.y
         ) {
+            // Check invincibility first and log either way
+            if (!player.canBeHit()) {
+                console.log("Enemy collision ignored - player invincible");
+                continue; // Skip collision handling completely
+            }
+            
+            console.log("Enemy collision with player detected");
             const playerDestroyed = player.hit();
             if (playerDestroyed) {
                 gameState = 'gameOver';
@@ -1423,6 +1436,13 @@ function resetGame() {
     
     // Reset player
     player = new Player();
+    
+    // Make player invincible on respawn for additional protection
+    player.isInvincible = true; 
+    player.invincibilityTimer = player.invincibilityDuration;
+    
+    // Force visibility during the first frame to prevent invisible start
+    player.isVisible = true;
     
     // Start a new game
     startGame();
