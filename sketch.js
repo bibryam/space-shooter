@@ -29,11 +29,25 @@ let backgroundStars = []; // Distant background stars
 let backgroundNebulas = []; // Far background nebulas
 let screenShake = 0; // Screen shake effect
 
-// Global variables for notification system
-let activeNotifications = [];
+// Global variables for notification systems
+let activeSideNotifications = []; // For powerups, lives, nuclear bomb
+let activeCenterNotifications = []; // For level progression, points
 
-function showNotification(message, subMessage, color, duration) {
-    activeNotifications.push({
+function showSideNotification(message, subMessage, color, duration) {
+    activeSideNotifications.push({
+        message: message,
+        subMessage: subMessage || "",
+        color: color || [255, 255, 255],
+        duration: duration || 60,
+        opacity: 255,
+        timer: duration || 60,
+        flashCount: 5, // Number of times to flash
+        flashRate: 0.2 // Controls flash speed
+    });
+}
+
+function showCenterNotification(message, subMessage, color, duration) {
+    activeCenterNotifications.push({
         message: message,
         subMessage: subMessage || "",
         color: color || [255, 255, 255],
@@ -43,9 +57,72 @@ function showNotification(message, subMessage, color, duration) {
     });
 }
 
-function updateAndDrawNotifications() {
-    for (let i = activeNotifications.length - 1; i >= 0; i--) {
-        let notification = activeNotifications[i];
+// Original function renamed to maintain compatibility with existing code
+function showNotification(message, subMessage, color, duration) {
+    // This is now for side notifications (powerups, lives, nuclear)
+    showSideNotification(message, subMessage, color, duration);
+}
+
+function updateAndDrawSideNotifications() {
+    // Calculate the base Y position for notifications based on active power-ups
+    let notificationBaseY = 120; // Start at the baseline position
+    
+    // Add space for each active power-up
+    if (player && gameState === 'playing') {
+        if (player.hasTripleShot) notificationBaseY += 25;
+        if (player.hasSpeedBoost) notificationBaseY += 25;
+        if (player.hasShield) notificationBaseY += 25;
+        if (player.hasBomb) notificationBaseY += 25;
+        
+        // Add a little extra padding
+        notificationBaseY += 10;
+    }
+    
+    for (let i = activeSideNotifications.length - 1; i >= 0; i--) {
+        let notification = activeSideNotifications[i];
+        
+        // Update timer
+        notification.timer--;
+        
+        // Calculate flash effect
+        let flashPhase = sin(frameCount * notification.flashRate * PI);
+        let flashOpacity = map(flashPhase, -1, 1, 0.5, 1);
+        
+        // Calculate opacity with fade-out
+        if (notification.timer < 30) {
+            notification.opacity = (notification.timer / 30) * 255;
+        }
+        
+        // Final opacity combines fade-out and flash effect
+        let finalOpacity = notification.opacity * flashOpacity;
+        
+        // Draw notification on left side of screen
+        push();
+        textAlign(LEFT, TOP);
+        textSize(20);
+        fill(notification.color[0], notification.color[1], notification.color[2], finalOpacity);
+        text(notification.message, 20, notificationBaseY);
+        
+        if (notification.subMessage) {
+            textSize(16);
+            fill(200, 200, 200, finalOpacity);
+            text(notification.subMessage, 20, notificationBaseY + 25);
+        }
+        pop();
+        
+        // Space for this notification
+        notificationBaseY += notification.subMessage ? 55 : 30;
+        
+        // Remove expired notifications
+        if (notification.timer <= 0) {
+            activeSideNotifications.splice(i, 1);
+        }
+    }
+}
+
+function updateAndDrawCenterNotifications() {
+    for (let i = activeCenterNotifications.length - 1; i >= 0; i--) {
+        let notification = activeCenterNotifications[i];
         
         // Update timer and opacity
         notification.timer--;
@@ -53,7 +130,7 @@ function updateAndDrawNotifications() {
             notification.opacity = (notification.timer / 30) * 255;
         }
         
-        // Draw notification
+        // Draw notification in center
         push();
         textAlign(CENTER);
         textSize(24);
@@ -69,9 +146,14 @@ function updateAndDrawNotifications() {
         
         // Remove expired notifications
         if (notification.timer <= 0) {
-            activeNotifications.splice(i, 1);
+            activeCenterNotifications.splice(i, 1);
         }
     }
+}
+
+function updateAndDrawNotifications() {
+    updateAndDrawSideNotifications();
+    updateAndDrawCenterNotifications();
 }
 
 // Setup function
@@ -355,15 +437,13 @@ function updateGame() {
         let levelBonus = (level-1) * 100;  // Level 1→2 = 100, Level 2→3 = 200, etc.
         score += levelBonus;
         
-        // Show notification for level bonus with delay
-        setTimeout(() => {
-            showNotification(
-                "LEVEL " + (level-1) + " COMPLETE!", 
-                "+" + levelBonus + " points", 
-                [0, 255, 0],
-                120  // 2 seconds
-            );
-        }, 500);  // 0.5 second delay
+        // Show center notification for level bonus
+        showCenterNotification(
+            "LEVEL " + (level-1) + " COMPLETE!", 
+            "+" + levelBonus + " points", 
+            [0, 255, 0],
+            120  // 2 seconds
+        );
         
         // Increase difficulty with each level (more gradual - ~10% per level)
         baseEnemySpeed += 0.1 + (level * 0.01); // More gradual speed increase
@@ -371,15 +451,16 @@ function updateGame() {
         // Display level announcement
         levelDisplayTimer = 180; // Display for 3 seconds (60 frames/second)
         
-        // Give extra life at specific levels with delay
+        // Give extra life at specific levels - now using side notification
         if (level === 4 || level === 7 || level === 9 || level === 10) {
             player.lives++;
-            setTimeout(() => {
-                showNotification("EXTRA LIFE!", 
-                               "Lives: " + player.lives, 
-                               [0, 255, 0],
-                               120); // 2 seconds
-            }, 2000);  // Increased delay to 2 seconds
+            // Extra life is a player power-up, so use side notification
+            showSideNotification(
+                "EXTRA LIFE!", 
+                "Lives: " + player.lives, 
+                [0, 255, 0],
+                120 // 2 seconds
+            );
         }
         
         // Give player a nuclear bomb at level 5 and every 2 levels after
@@ -393,13 +474,7 @@ function updateGame() {
                 1.5
             );
             
-            // Add a notification message about the nuclear bomb with delay
-            setTimeout(() => {
-                showNotification("☢ NUCLEAR ACQUIRED!", 
-                                "Press ↵ as last resort", 
-                                [255, 50, 50],
-                                120); // 2 seconds
-            }, 3500);  // Increased delay to 3.5 seconds
+            // Note: Notification for nuclear is handled inside player.addBomb()
         }
         
         // Spawn boss at set level intervals
@@ -1069,7 +1144,7 @@ function displayGameInfo() {
         if (level % bossLevelThreshold === 0) {
             textSize(24);
             fill(255, 50, 50, levelAlpha);
-            text('BOSS INCOMING!', width/2, height/3 + 50);
+            text('DANGER APPROACHING...', width/2, height/3 + 50);
         }
     }
     

@@ -98,16 +98,19 @@ class Player {
     }
     
     activateTripleShot() {
+        // Only update the state - don't show notification here
         this.hasTripleShot = true;
         this.tripleShotTimer = 10000; // 10 seconds
     }
     
     activateSpeedBoost() {
+        // Only update the state - don't show notification here
         this.hasSpeedBoost = true;
         this.speedBoostTimer = 10000; // Changed to 10 seconds
     }
     
     activateShield() {
+        // Only update the state - don't show notification here
         this.hasShield = true;
         this.shieldTimer = 10000; // 10 seconds
     }
@@ -125,6 +128,16 @@ class Player {
     addBomb() {
         this.bombCount++;
         this.hasBomb = true;
+        
+        // Show notification for nuclear bomb using side notification
+        if (typeof showSideNotification === 'function') {
+            showSideNotification(
+                "☢ NUCLEAR ACQUIRED!", 
+                "Press ↵ to detonate", 
+                [255, 50, 50], 
+                120
+            );
+        }
     }
     
     hit() {

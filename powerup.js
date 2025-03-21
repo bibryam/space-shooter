@@ -162,16 +162,45 @@ class PowerUp {
             }
         }
         
-        // Apply power-up effect
+        // Apply power-up effect and show appropriate notification
         switch (this.type) {
             case 'tripleShot':
                 player.activateTripleShot();
+                // Show notification for triple shot
+                if (typeof showSideNotification === 'function') {
+                    showSideNotification(
+                        "BURST FIRE ACQUIRED!", 
+                        null, // Remove subtitle text
+                        [255, 50, 50], 
+                        120
+                    );
+                }
                 break;
+                
             case 'speedBoost':
                 player.activateSpeedBoost();
+                // Show notification for speed boost
+                if (typeof showSideNotification === 'function') {
+                    showSideNotification(
+                        "NITRO BOOST ACQUIRED!", 
+                        null, // Remove subtitle text
+                        [255, 150, 0], 
+                        120
+                    );
+                }
                 break;
+                
             case 'shield':
                 player.activateShield();
+                // Show notification for shield
+                if (typeof showSideNotification === 'function') {
+                    showSideNotification(
+                        "SHIELD ACTIVATED!", 
+                        null, // Remove subtitle text
+                        [0, 200, 255], 
+                        120
+                    );
+                }
                 break;
         }
     }
