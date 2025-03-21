@@ -215,7 +215,7 @@ function createBackgroundElements() {
             x: random(width),
             y: random(height),
             size: random(0.5, 1.5),
-            speed: random(0.1, 0.3),
+            speed: random(0.02, 0.08), // Reduced from 0.05-0.15 to 0.02-0.08
             brightness: random(100, 200)
         });
     }
@@ -226,7 +226,7 @@ function createBackgroundElements() {
             x: random(width),
             y: random(height),
             size: random(1, 3),
-            speed: random(0.5, 1.5),
+            speed: random(0.1, 0.3), // Reduced from 0.2-0.7 to 0.1-0.3
             brightness: random(150, 255),
             twinkleSpeed: random(0.02, 0.05),
             twinkleAmount: random(30, 70)
@@ -236,9 +236,9 @@ function createBackgroundElements() {
     // Create nebulas (colorful gas clouds in the background)
     for (let i = 0; i < 3; i++) {
         let nebulaColors = [
-            [30, 0, 50, 5],   // Deep purple
-            [0, 30, 70, 5],   // Deep blue
-            [50, 0, 30, 5]    // Deep magenta
+            [30, 0, 50, 2],   // Deep purple - further reduced alpha
+            [0, 30, 70, 2],   // Deep blue - further reduced alpha
+            [50, 0, 30, 2]    // Deep magenta - further reduced alpha
         ];
         
         let colorIndex = floor(random(nebulaColors.length));
@@ -246,9 +246,9 @@ function createBackgroundElements() {
         backgroundNebulas.push({
             x: random(width),
             y: random(height),
-            width: random(200, 400),
-            height: random(100, 300),
-            speed: random(0.05, 0.2),
+            width: random(50, 100), // Further reduced from 100-200 to 50-100
+            height: random(25, 75), // Further reduced from 50-150 to 25-75
+            speed: random(0.05, 0.15),
             color: nebulaColors[colorIndex],
             noiseOffset: random(100)
         });
@@ -257,9 +257,9 @@ function createBackgroundElements() {
     // Create foreground nebula effects (more visible, colorful)
     for (let i = 0; i < 2; i++) {
         let nebulaColors = [
-            [70, 20, 120, 2],  // Purple
-            [20, 40, 120, 2],  // Blue
-            [120, 20, 70, 2]   // Pink
+            [70, 20, 120, 1],  // Purple
+            [20, 40, 120, 1],  // Blue
+            [120, 20, 70, 1]   // Pink
         ];
         
         let colorIndex = floor(random(nebulaColors.length));
@@ -267,9 +267,9 @@ function createBackgroundElements() {
         nebulas.push({
             x: random(width),
             y: random(height),
-            width: random(150, 300),
-            height: random(80, 200),
-            speed: random(0.2, 0.4),
+            width: random(35, 70), // Further reduced from 75-150 to 35-70
+            height: random(20, 50), // Further reduced from 40-100 to 20-50
+            speed: random(0.15, 0.3),
             color: nebulaColors[colorIndex],
             noiseOffset: random(100)
         });
@@ -315,7 +315,7 @@ function drawBackgroundElements() {
         // Draw nebula with noise-based shape
         noStroke();
         for (let j = 0; j < 5; j++) { // Layer multiple slightly different colors
-            let alpha = nebula.color[3] * (5-j);
+            let alpha = nebula.color[3] * (5-j) * 0.7; // Reduced alpha by multiplying by 0.7
             fill(nebula.color[0] + j*10, nebula.color[1] + j*5, nebula.color[2] + j*15, alpha);
             
             beginShape();
@@ -390,7 +390,7 @@ function drawBackgroundElements() {
         // Draw nebula with noise-based shape
         noStroke();
         for (let j = 0; j < 5; j++) { // Layer for depth
-            let alpha = 20 - j * 3;
+            let alpha = (20 - j * 3) * 0.7; // Reduced alpha by multiplying by 0.7
             fill(nebula.color[0] + j*10, nebula.color[1] + j*5, nebula.color[2] + j*15, alpha);
             
             beginShape();
